@@ -3,6 +3,7 @@ package org.techtown.singlediary;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -90,7 +91,7 @@ public class CreateFragment extends Fragment{
 
         weatherIcon = view.findViewById(R.id.weather);
 
-        String date_n = new SimpleDateFormat("yyyy년 MM월 dd일", Locale.getDefault()).format(new Date());
+        String date_n = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         dateText = view.findViewById(R.id.dateText);
 
         dateText.setText(date_n);
@@ -289,10 +290,19 @@ public class CreateFragment extends Fragment{
         }
         String imgPath = saveToInternalStorage(((BitmapDrawable)thumbnail.getDrawable()).getBitmap(), dataNum);
 
-        database.execSQL("insert into " + TABLE_NAME
-                    + "(content, imgPath, date, weather, address, smileGauge)"
-                    + " values "
-                    + "('" + content.getText().toString() + "','" + imgPath + "','" + dateText.getText().toString() + "'," + weatherInteger + ",'" + address.getText().toString() + "'," + smileGauge +")");
+
+        insertData(content.getText().toString(), imgPath, dateText.getText().toString(), weatherInteger, address.getText().toString(), smileGauge);
+    }
+
+    public void insertData(String content, String imgPath, String date, int weather, String address, int smileGauge){
+        ContentValues cv = new ContentValues();
+        cv.put("content", content);
+        cv.put("imgPath", imgPath);
+        cv.put("date", date);
+        cv.put("weather", weather);
+        cv.put("address", address);
+        cv.put("smileGauge", smileGauge);
+        database.insert(TABLE_NAME, null, cv);
     }
 
     private String saveToInternalStorage(Bitmap bitmapImage, int number){
