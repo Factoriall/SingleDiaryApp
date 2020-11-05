@@ -111,25 +111,25 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.ViewHolder>{
             }
 
             switch(item.getCondition()){
-                case 1:
+                case 0:
                     conditionIcon.setImageResource(R.drawable.smile1_24);
                     break;
-                case 2:
+                case 1:
                     conditionIcon.setImageResource(R.drawable.smile2_24);
                     break;
-                case 3:
+                case 2:
                     conditionIcon.setImageResource(R.drawable.smile3_24);
                     break;
-                case 4:
+                case 3:
                     conditionIcon.setImageResource(R.drawable.smile4_24);
                     break;
-                case 5:
+                case 4:
                     conditionIcon.setImageResource(R.drawable.smile5_24);
                     break;
             }
             date.setText(item.getDate());
             address.setText(item.getAddress());
-            photo.setImageBitmap(item.getPhoto());
+            photo.setImageBitmap(item.getThumbnail());
             content.setText(item.getContent());
         }
     }

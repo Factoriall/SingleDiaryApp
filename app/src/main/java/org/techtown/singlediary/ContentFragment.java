@@ -107,7 +107,6 @@ public class ContentFragment extends Fragment {
             } catch (Exception e){e.printStackTrace();
                 showToast("Fail to find at " + imgPath + "/" + "thumbnail" + id + ".jpg");}
             adapter.addItem(new Diary(content, date, address, smileGauge, weather, bitmap));
-
         }
     }
 

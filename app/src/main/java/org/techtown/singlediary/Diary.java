@@ -8,15 +8,15 @@ public class Diary {
     String address;
     int condition;
     int weather;
-    Bitmap photo;
+    Bitmap thumbnail;
 
-    public Diary(String content, String date, String address, int condition, int weather, Bitmap photo) {
+    public Diary(String content, String date, String address, int condition, int weather, Bitmap thumbnail) {
         this.content = content;
         this.date = date;
         this.address = address;
         this.condition = condition;
         this.weather = weather;
-        this.photo = photo;
+        this.thumbnail = thumbnail;
     }
 
     public String getContent() {
@@ -59,11 +59,11 @@ public class Diary {
         this.weather = weather;
     }
 
-    public Bitmap getPhoto() {
-        return photo;
+    public Bitmap getThumbnail() {
+        return thumbnail;
     }
 
     public void setPhoto(Bitmap photo) {
-        this.photo = photo;
+        this.thumbnail = thumbnail;
     }
 }

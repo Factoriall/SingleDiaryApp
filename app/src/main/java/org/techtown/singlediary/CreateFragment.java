@@ -48,6 +48,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,41 +67,91 @@ public class CreateFragment extends Fragment{
     TextView content;
     TextView address;
     int weatherInteger;
+    int condition;
+    ImageView thumbnail;
+
     ImageView weatherIcon;
     SeekBar smileBar;
-    int smileGauge;
-    ImageView thumbnail;
-    SQLiteDatabase database;
-    DatabaseHelper dbHelper;
 
     private static int RESULT_LOAD_IMG = 1;
-    private static String TABLE_NAME = "diary";
     private FusedLocationProviderClient fusedLocationClient;
     static RequestQueue requestQueue;
+
+    class Database {
+        SQLiteDatabase database;
+        DatabaseHelper dbHelper;
+        String tableName;
+
+        Database(String tableName) {
+            this.dbHelper = new DatabaseHelper(getContext());
+            this.database = dbHelper.getWritableDatabase();
+            this.tableName = tableName;
+        }
+
+        public void saveData(Diary diary) {
+            int dataNum = 1;
+            Cursor cur = database.rawQuery("SELECT count(*) FROM " + tableName, null);
+            if (cur != null && cur.moveToFirst() && cur.getInt(0) > 0) {
+                Cursor rCursor = database.rawQuery("SELECT MAX(_id) FROM " + tableName, null);
+                rCursor.moveToNext();
+                dataNum = rCursor.getInt(0) + 1;
+            }
+            String imgPath = saveToInternalStorage(diary.getThumbnail(), dataNum);
+
+            ContentValues cv = new ContentValues();
+            cv.put("content", diary.getContent());
+            cv.put("imgPath", imgPath);
+            cv.put("date", diary.getDate());
+            cv.put("weather", diary.getWeather());
+            cv.put("address", diary.getAddress());
+            cv.put("smileGauge", diary.getCondition());
+            database.insert(tableName, null, cv);
+        }
+
+        private String saveToInternalStorage(Bitmap bitmapImage, int number){
+            ContextWrapper cw = new ContextWrapper(getContext());
+            File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+            File mypath = new File(directory,"thumbnail" + number + ".jpg");
+
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(mypath);
+                // Use the compress method on the BitMap object to write image to the OutputStream
+                bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            } catch (Exception e) {
+                showToast("fail to save");
+                e.printStackTrace();
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return directory.getAbsolutePath();
+        }
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.create_fragment, container, false);
 
-        address = view.findViewById(R.id.address);
-        getAddressAndWeather();
-
         content = view.findViewById(R.id.content);
         thumbnail = view.findViewById(R.id.thumbnail);
-
         weatherIcon = view.findViewById(R.id.weather);
-
-        String date_n = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        address = view.findViewById(R.id.address);
         dateText = view.findViewById(R.id.dateText);
 
-        dateText.setText(date_n);
         /*dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 changeDate();
             }
         });*/
+        dateText.setText(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+        getAddressAndWeather();
 
         thumbnail.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,7 +164,7 @@ public class CreateFragment extends Fragment{
         smileBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                smileGauge = i;
+                condition = i;
             }
 
             @Override
@@ -123,11 +174,17 @@ public class CreateFragment extends Fragment{
             public void onStopTrackingTouch(SeekBar seekBar) { }
         });
 
+        final Database db = new Database("diary");
         Button saveButton = view.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveDiary();
+                db.saveData(new Diary(content.getText().toString(),
+                        dateText.getText().toString(),
+                        address.getText().toString(),
+                        weatherInteger,
+                        condition,
+                        ((BitmapDrawable) thumbnail.getDrawable()).getBitmap()));
             }
         });
 
@@ -260,7 +317,6 @@ public class CreateFragment extends Fragment{
     public void onActivityResult(int reqCode, int resultCode, Intent data) {
         super.onActivityResult(reqCode, resultCode, data);
 
-
         if (resultCode == Activity.RESULT_OK) {
             try {
                 final Uri imageUri = data.getData();
@@ -277,68 +333,13 @@ public class CreateFragment extends Fragment{
         }
     }
 
-    private void saveDiary(){
-        dbHelper = new DatabaseHelper(getContext());
-        database = dbHelper.getWritableDatabase();
-
-        int dataNum = 1;
-        Cursor cur = database.rawQuery("SELECT count(*) FROM " + TABLE_NAME, null);
-        if (cur != null && cur.moveToFirst() && cur.getInt(0) > 0) {
-            Cursor rCursor = database.rawQuery("SELECT MAX(_id) FROM " + TABLE_NAME, null);
-            rCursor.moveToNext();
-            dataNum = rCursor.getInt(0) + 1;
-        }
-        String imgPath = saveToInternalStorage(((BitmapDrawable)thumbnail.getDrawable()).getBitmap(), dataNum);
-
-
-        insertData(content.getText().toString(), imgPath, dateText.getText().toString(), weatherInteger, address.getText().toString(), smileGauge);
-    }
-
-    public void insertData(String content, String imgPath, String date, int weather, String address, int smileGauge){
-        ContentValues cv = new ContentValues();
-        cv.put("content", content);
-        cv.put("imgPath", imgPath);
-        cv.put("date", date);
-        cv.put("weather", weather);
-        cv.put("address", address);
-        cv.put("smileGauge", smileGauge);
-        database.insert(TABLE_NAME, null, cv);
-    }
-
-    private String saveToInternalStorage(Bitmap bitmapImage, int number){
-        ContextWrapper cw = new ContextWrapper(getContext());
-        // path to /data/data/yourapp/app_data/imageDir
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath = new File(directory,"thumbnail" + number + ".jpg");
-
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-        } catch (Exception e) {
-            showToast("fail to save");
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        showToast("Save at " + directory.getAbsolutePath());
-        return directory.getAbsolutePath();
-    }
-
     private void deleteDiary(){
         content.setText("");
         thumbnail.setImageResource(R.drawable.imagetoset);
-        String date_n = new SimpleDateFormat("MM월 dd일", Locale.getDefault()).format(new Date());
+        String date_n = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
         dateText.setText(date_n);
         smileBar.setProgress(0);
-        smileGauge = 0;
+        condition = 0;
     }
 
     private void exitFragment(){
