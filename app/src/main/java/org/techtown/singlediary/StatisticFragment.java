@@ -67,7 +67,7 @@ public class StatisticFragment extends Fragment {
             this.chart = (PieChart) viewById;
         }
 
-        private void setPieChartUi(){
+        public void setPieChartUi(){
             chart.setUsePercentValues(true);
             chart.getDescription().setEnabled(false);
 
@@ -106,11 +106,16 @@ public class StatisticFragment extends Fragment {
             }
 
             if(recordCount != 0) {
-                entries.add(new PieEntry(getPercentage(smile[0], recordCount), "", getResources().getDrawable(R.drawable.smile1_24)));
-                entries.add(new PieEntry(getPercentage(smile[1], recordCount), "", getResources().getDrawable(R.drawable.smile2_24)));
-                entries.add(new PieEntry(getPercentage(smile[2], recordCount), "", getResources().getDrawable(R.drawable.smile3_24)));
-                entries.add(new PieEntry(getPercentage(smile[3], recordCount), "", getResources().getDrawable(R.drawable.smile4_24)));
-                entries.add(new PieEntry(getPercentage(smile[4], recordCount), "", getResources().getDrawable(R.drawable.smile5_24)));
+                if(smile[0] != 0)
+                    entries.add(new PieEntry(getPercentage(smile[0], recordCount), "", getResources().getDrawable(R.drawable.smile1_24)));
+                if(smile[1] != 0)
+                    entries.add(new PieEntry(getPercentage(smile[1], recordCount), "", getResources().getDrawable(R.drawable.smile2_24)));
+                if(smile[2] != 0)
+                    entries.add(new PieEntry(getPercentage(smile[2], recordCount), "", getResources().getDrawable(R.drawable.smile3_24)));
+                if(smile[3] != 0)
+                    entries.add(new PieEntry(getPercentage(smile[3], recordCount), "", getResources().getDrawable(R.drawable.smile4_24)));
+                if(smile[4] != 0)
+                    entries.add(new PieEntry(getPercentage(smile[4], recordCount), "", getResources().getDrawable(R.drawable.smile5_24)));
             }
             PieDataSet dataSet = new PieDataSet(entries, "기분별 비율");
 
@@ -156,72 +161,6 @@ public class StatisticFragment extends Fragment {
         setLineChartUi(chart3);
 
         return view;
-    }
-
-    private void setPieChartUi(PieChart chart){
-        chart.setUsePercentValues(true);
-        chart.getDescription().setEnabled(false);
-
-        chart.setCenterText("기분별 비율");
-
-        chart.setTransparentCircleColor(Color.WHITE);
-        chart.setTransparentCircleAlpha(110);
-
-        chart.setHoleRadius(58f);
-        chart.setTransparentCircleRadius(61f);
-
-        chart.setDrawCenterText(true);
-
-        chart.setHighlightPerTapEnabled(true);
-
-        Legend l = chart.getLegend();
-        l.setEnabled(false);
-
-        // entry label styling
-        chart.setEntryLabelColor(Color.WHITE);
-        chart.setEntryLabelTextSize(12f);
-
-        setPieChartData(chart);
-    }
-
-    private void setPieChartData(PieChart chart){
-        ArrayList<PieEntry> entries = new ArrayList<>();
-
-        Cursor cursor = database.rawQuery("SELECT condition FROM diary", null);
-        int[] smile = new int[5];
-        int recordCount = cursor.getCount();
-        for(int i=0; i<recordCount; i++) {
-            cursor.moveToNext();
-            int condition = cursor.getInt(0);
-            smile[condition]++;
-        }
-
-        if(recordCount != 0) {
-            entries.add(new PieEntry(getPercentage(smile[0], recordCount), "", getResources().getDrawable(R.drawable.smile1_24)));
-            entries.add(new PieEntry(getPercentage(smile[1], recordCount), "", getResources().getDrawable(R.drawable.smile2_24)));
-            entries.add(new PieEntry(getPercentage(smile[2], recordCount), "", getResources().getDrawable(R.drawable.smile3_24)));
-            entries.add(new PieEntry(getPercentage(smile[3], recordCount), "", getResources().getDrawable(R.drawable.smile4_24)));
-            entries.add(new PieEntry(getPercentage(smile[4], recordCount), "", getResources().getDrawable(R.drawable.smile5_24)));
-        }
-        PieDataSet dataSet = new PieDataSet(entries, "기분별 비율");
-
-        dataSet.setDrawIcons(true);
-        dataSet.setSliceSpace(3f);
-        dataSet.setIconsOffset(new MPPointF(0, -40));
-        dataSet.setSelectionShift(5f);
-
-        ArrayList<Integer> colors = new ArrayList<>();
-        for (int c : ColorTemplate.JOYFUL_COLORS)
-            colors.add(c);
-
-        dataSet.setColors(colors);
-
-        PieData data = new PieData(dataSet);
-        data.setValueTextSize(11f);
-        data.setValueTextColor(Color.WHITE);
-        chart.setData(data);
-
-        chart.invalidate();
     }
 
     private float getPercentage(int divident, int divider){
