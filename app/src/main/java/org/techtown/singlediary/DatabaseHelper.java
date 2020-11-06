@@ -25,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + " date text, "
                 + " weather integer, "
                 + " address text, "
-                + " smileGauge integer)";
+                + " condition integer)";
         sqLiteDatabase.execSQL(sql);
     }
 

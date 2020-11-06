@@ -1,5 +1,8 @@
 package org.techtown.singlediary;
 
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Typeface;
@@ -51,60 +54,155 @@ import java.util.ArrayList;
 import static androidx.core.content.ContextCompat.getColor;
 
 public class StatisticFragment extends Fragment {
-    PieChart chart1;
-    BarChart chart2;
+    BarChart[] chart2;
     LineChart chart3;
+
+    DatabaseHelper dbHelper;
+    SQLiteDatabase database;
+
+    class PieChartClass{
+        PieChart chart;
+
+        public PieChartClass(View viewById) {
+            this.chart = (PieChart) viewById;
+        }
+
+        private void setPieChartUi(){
+            chart.setUsePercentValues(true);
+            chart.getDescription().setEnabled(false);
+
+            chart.setCenterText("기분별 비율");
+
+            chart.setTransparentCircleColor(Color.WHITE);
+            chart.setTransparentCircleAlpha(110);
+
+            chart.setHoleRadius(58f);
+            chart.setTransparentCircleRadius(61f);
+
+            chart.setDrawCenterText(true);
+
+            chart.setHighlightPerTapEnabled(true);
+
+            Legend l = chart.getLegend();
+            l.setEnabled(false);
+
+            // entry label styling
+            chart.setEntryLabelColor(Color.WHITE);
+            chart.setEntryLabelTextSize(12f);
+
+            setPieChartData();
+        }
+
+        private void setPieChartData(){
+            ArrayList<PieEntry> entries = new ArrayList<>();
+
+            Cursor cursor = database.rawQuery("SELECT condition FROM diary", null);
+            int[] smile = new int[5];
+            int recordCount = cursor.getCount();
+            for(int i=0; i<recordCount; i++) {
+                cursor.moveToNext();
+                int condition = cursor.getInt(0);
+                smile[condition]++;
+            }
+
+            if(recordCount != 0) {
+                entries.add(new PieEntry(getPercentage(smile[0], recordCount), "", getResources().getDrawable(R.drawable.smile1_24)));
+                entries.add(new PieEntry(getPercentage(smile[1], recordCount), "", getResources().getDrawable(R.drawable.smile2_24)));
+                entries.add(new PieEntry(getPercentage(smile[2], recordCount), "", getResources().getDrawable(R.drawable.smile3_24)));
+                entries.add(new PieEntry(getPercentage(smile[3], recordCount), "", getResources().getDrawable(R.drawable.smile4_24)));
+                entries.add(new PieEntry(getPercentage(smile[4], recordCount), "", getResources().getDrawable(R.drawable.smile5_24)));
+            }
+            PieDataSet dataSet = new PieDataSet(entries, "기분별 비율");
+
+            dataSet.setDrawIcons(true);
+            dataSet.setSliceSpace(3f);
+            dataSet.setIconsOffset(new MPPointF(0, -40));
+            dataSet.setSelectionShift(5f);
+
+            ArrayList<Integer> colors = new ArrayList<>();
+            for (int c : ColorTemplate.JOYFUL_COLORS)
+                colors.add(c);
+
+            dataSet.setColors(colors);
+
+            PieData data = new PieData(dataSet);
+            data.setValueTextSize(11f);
+            data.setValueTextColor(Color.WHITE);
+            chart.setData(data);
+
+            chart.invalidate();
+        }
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)  {
         View view = inflater.inflate(R.layout.statistic_fragment, container, false);
+        dbHelper = new DatabaseHelper(getContext());
+        database = dbHelper.getWritableDatabase();
 
-        chart1 = view.findViewById(R.id.chart1);
-        setChart1Ui();
-        chart2 = view.findViewById(R.id.chart2);
-        setChart2Ui();
+        PieChartClass chart1 = new PieChartClass(view.findViewById(R.id.chart1));
+        chart1.setPieChartUi();
+
+        Resources res = getResources();
+        chart2 = new BarChart[7];
+        for(int i=0; i<7; i++) {
+            String idName = "chart2_" + (i+1);
+            chart2[i] = view.findViewById(res.getIdentifier(idName, "id", getActivity().getPackageName()));
+            setBarChartUi(chart2[i]);
+        }
+
         chart3 = view.findViewById(R.id.chart3);
-        setChart3Ui();
+        setLineChartUi(chart3);
 
         return view;
     }
 
-    private void setChart1Ui(){
-        chart1.setUsePercentValues(true);
-        chart1.getDescription().setEnabled(false);
+    private void setPieChartUi(PieChart chart){
+        chart.setUsePercentValues(true);
+        chart.getDescription().setEnabled(false);
 
-        chart1.setCenterText("기분별 비율");
+        chart.setCenterText("기분별 비율");
 
-        chart1.setTransparentCircleColor(Color.WHITE);
-        chart1.setTransparentCircleAlpha(110);
+        chart.setTransparentCircleColor(Color.WHITE);
+        chart.setTransparentCircleAlpha(110);
 
-        chart1.setHoleRadius(58f);
-        chart1.setTransparentCircleRadius(61f);
+        chart.setHoleRadius(58f);
+        chart.setTransparentCircleRadius(61f);
 
-        chart1.setDrawCenterText(true);
+        chart.setDrawCenterText(true);
 
-        chart1.setHighlightPerTapEnabled(true);
+        chart.setHighlightPerTapEnabled(true);
 
-        Legend l = chart1.getLegend();
+        Legend l = chart.getLegend();
         l.setEnabled(false);
 
         // entry label styling
-        chart1.setEntryLabelColor(Color.WHITE);
-        chart1.setEntryLabelTextSize(12f);
+        chart.setEntryLabelColor(Color.WHITE);
+        chart.setEntryLabelTextSize(12f);
 
-        setData1();
+        setPieChartData(chart);
     }
 
-    private void setData1(){
+    private void setPieChartData(PieChart chart){
         ArrayList<PieEntry> entries = new ArrayList<>();
 
-        entries.add(new PieEntry(20.0f, "", getResources().getDrawable(R.drawable.smile1_24)));
-        entries.add(new PieEntry(20.0f, "", getResources().getDrawable(R.drawable.smile2_24)));
-        entries.add(new PieEntry(20.0f, "", getResources().getDrawable(R.drawable.smile3_24)));
-        entries.add(new PieEntry(20.0f, "", getResources().getDrawable(R.drawable.smile4_24)));
-        entries.add(new PieEntry(20.0f, "", getResources().getDrawable(R.drawable.smile5_24)));
+        Cursor cursor = database.rawQuery("SELECT condition FROM diary", null);
+        int[] smile = new int[5];
+        int recordCount = cursor.getCount();
+        for(int i=0; i<recordCount; i++) {
+            cursor.moveToNext();
+            int condition = cursor.getInt(0);
+            smile[condition]++;
+        }
 
+        if(recordCount != 0) {
+            entries.add(new PieEntry(getPercentage(smile[0], recordCount), "", getResources().getDrawable(R.drawable.smile1_24)));
+            entries.add(new PieEntry(getPercentage(smile[1], recordCount), "", getResources().getDrawable(R.drawable.smile2_24)));
+            entries.add(new PieEntry(getPercentage(smile[2], recordCount), "", getResources().getDrawable(R.drawable.smile3_24)));
+            entries.add(new PieEntry(getPercentage(smile[3], recordCount), "", getResources().getDrawable(R.drawable.smile4_24)));
+            entries.add(new PieEntry(getPercentage(smile[4], recordCount), "", getResources().getDrawable(R.drawable.smile5_24)));
+        }
         PieDataSet dataSet = new PieDataSet(entries, "기분별 비율");
 
         dataSet.setDrawIcons(true);
@@ -121,47 +219,51 @@ public class StatisticFragment extends Fragment {
         PieData data = new PieData(dataSet);
         data.setValueTextSize(11f);
         data.setValueTextColor(Color.WHITE);
-        chart1.setData(data);
+        chart.setData(data);
 
-        chart1.invalidate();
+        chart.invalidate();
     }
 
-    private void setChart2Ui(){
-        chart2.setDrawBarShadow(false);
-        chart2.setDrawValueAboveBar(false);
+    private float getPercentage(int divident, int divider){
+        return divident / (float)divider * 100.0f;
+    }
 
-        chart2.getDescription().setEnabled(false);
+    private void setBarChartUi(BarChart chart){
+        chart.setDrawBarShadow(false);
+        chart.setDrawValueAboveBar(false);
+
+        chart.getDescription().setEnabled(false);
 
         // scaling can now only be done on x- and y-axis separately
-        chart2.setPinchZoom(false);
+        chart.setPinchZoom(false);
 
-        chart2.setDrawGridBackground(false);
+        chart.setDrawGridBackground(false);
 
-        XAxis xAxis = chart2.getXAxis();
+        XAxis xAxis = chart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(false);
         xAxis.setGranularity(1f); // only intervals of 1 day
         xAxis.setLabelCount(7);
 
-        YAxis leftAxis = chart2.getAxisLeft();
+        YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setLabelCount(8, false);
         leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
         leftAxis.setSpaceTop(15f);
         leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
 
-        YAxis rightAxis = chart2.getAxisRight();
+        YAxis rightAxis = chart.getAxisRight();
         rightAxis.setDrawGridLines(false);
         rightAxis.setLabelCount(8, false);
         rightAxis.setSpaceTop(15f);
         rightAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
 
-        Legend l = chart2.getLegend();
+        Legend l = chart.getLegend();
         l.setEnabled(false);
 
-        setData2();
+        setBarChartData(chart);
     }
 
-    public void setData2(){
+    public void setBarChartData(BarChart chart){
         ArrayList<BarEntry> values = new ArrayList<>();
 
         values.add(new BarEntry(0, 10.0f, getResources().getDrawable(R.drawable.smile1_24)));
@@ -172,12 +274,12 @@ public class StatisticFragment extends Fragment {
 
         BarDataSet set1;
 
-        if (chart2.getData() != null &&
-                chart2.getData().getDataSetCount() > 0) {
-            set1 = (BarDataSet) chart2.getData().getDataSetByIndex(0);
+        if (chart.getData() != null &&
+                chart.getData().getDataSetCount() > 0) {
+            set1 = (BarDataSet) chart.getData().getDataSetByIndex(0);
             set1.setValues(values);
-            chart2.getData().notifyDataChanged();
-            chart2.notifyDataSetChanged();
+            chart.getData().notifyDataChanged();
+            chart.notifyDataSetChanged();
 
         } else {
             set1 = new BarDataSet(values, "요일별 기분");
@@ -197,35 +299,35 @@ public class StatisticFragment extends Fragment {
             data.setValueTextSize(10f);
             data.setBarWidth(0.9f);
 
-            chart2.setData(data);
+            chart.setData(data);
         }
     }
 
-    private void setChart3Ui(){
+    private void setLineChartUi(LineChart chart){
         // background color
-        chart3.setBackgroundColor(Color.WHITE);
+        chart.setBackgroundColor(Color.WHITE);
 
         // disable description text
-        chart3.getDescription().setEnabled(false);
+        chart.getDescription().setEnabled(false);
 
         // enable touch gestures
-        chart3.setTouchEnabled(true);
+        chart.setTouchEnabled(true);
 
         // set listeners
-        chart3.setDrawGridBackground(false);
+        chart.setDrawGridBackground(false);
 
         // enable scaling and dragging
-        chart3.setDragEnabled(true);
-        chart3.setScaleEnabled(true);
+        chart.setDragEnabled(true);
+        chart.setScaleEnabled(true);
         // chart.setScaleXEnabled(true);
         // chart.setScaleYEnabled(true);
 
         // force pinch zoom along both axis
-        chart3.setPinchZoom(true);
+        chart.setPinchZoom(true);
 
         XAxis xAxis;
         {   // // X-Axis Style // //
-            xAxis = chart3.getXAxis();
+            xAxis = chart.getXAxis();
 
             // vertical grid lines
             xAxis.enableGridDashedLine(10f, 10f, 0f);
@@ -233,10 +335,10 @@ public class StatisticFragment extends Fragment {
 
         YAxis yAxis;
         {   // // Y-Axis Style // //
-            yAxis = chart3.getAxisLeft();
+            yAxis = chart.getAxisLeft();
 
             // disable dual axis (only use LEFT axis)
-            chart3.getAxisRight().setEnabled(false);
+            chart.getAxisRight().setEnabled(false);
 
             // horizontal grid lines
             yAxis.enableGridDashedLine(10f, 10f, 0f);
@@ -247,13 +349,13 @@ public class StatisticFragment extends Fragment {
         }
 
         // get the legend (only possible after setting data)
-        Legend l = chart3.getLegend();
+        Legend l = chart.getLegend();
         l.setEnabled(false);
 
-        setData3();
+        setLineChartData(chart);
     }
 
-    private void setData3() {
+    private void setLineChartData(final LineChart chart) {
         ArrayList<Entry> values = new ArrayList<>();
 
         values.add(new Entry(0, 20.0f, getResources().getDrawable(R.drawable.smile1_24)));
@@ -264,13 +366,13 @@ public class StatisticFragment extends Fragment {
 
         LineDataSet set1;
 
-        if (chart3.getData() != null &&
-                chart3.getData().getDataSetCount() > 0) {
-            set1 = (LineDataSet) chart3.getData().getDataSetByIndex(0);
+        if (chart.getData() != null &&
+                chart.getData().getDataSetCount() > 0) {
+            set1 = (LineDataSet) chart.getData().getDataSetByIndex(0);
             set1.setValues(values);
             set1.notifyDataSetChanged();
-            chart3.getData().notifyDataChanged();
-            chart3.notifyDataSetChanged();
+            chart.getData().notifyDataChanged();
+            chart.notifyDataSetChanged();
         } else {
             // create a dataset and give it a type
             set1 = new LineDataSet(values, "DataSet 1");
@@ -307,7 +409,7 @@ public class StatisticFragment extends Fragment {
             set1.setFillFormatter(new IFillFormatter() {
                 @Override
                 public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
-                    return chart3.getAxisLeft().getAxisMinimum();
+                    return chart.getAxisLeft().getAxisMinimum();
                 }
             });
 
@@ -318,7 +420,7 @@ public class StatisticFragment extends Fragment {
             LineData data = new LineData(dataSets);
 
             // set data
-            chart3.setData(data);
+            chart.setData(data);
         }
     }
 }

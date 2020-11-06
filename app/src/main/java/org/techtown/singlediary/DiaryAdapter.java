@@ -74,6 +74,7 @@ public class DiaryAdapter extends RecyclerView.Adapter<DiaryAdapter.ViewHolder>{
         TextView content;
         TextView address;
 
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 

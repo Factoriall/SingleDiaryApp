@@ -99,14 +99,14 @@ public class ContentFragment extends Fragment {
             String date = cursor.getString(3);
             int weather = cursor.getInt(4);
             String address = cursor.getString(5);
-            int smileGauge = cursor.getInt(6);
+            int condition = cursor.getInt(6);
             Bitmap bitmap = null;
             try {
                 File f = new File(imgPath, "thumbnail" + id + ".jpg");
                 bitmap = BitmapFactory.decodeStream(new FileInputStream(f));
             } catch (Exception e){e.printStackTrace();
                 showToast("Fail to find at " + imgPath + "/" + "thumbnail" + id + ".jpg");}
-            adapter.addItem(new Diary(content, date, address, smileGauge, weather, bitmap));
+            adapter.addItem(new Diary(content, date, address, condition, weather, bitmap));
         }
     }
 

@@ -104,7 +104,8 @@ public class CreateFragment extends Fragment{
             cv.put("date", diary.getDate());
             cv.put("weather", diary.getWeather());
             cv.put("address", diary.getAddress());
-            cv.put("smileGauge", diary.getCondition());
+            showToast(Integer.toString(diary.getCondition()));
+            cv.put("condition", diary.getCondition());
             database.insert(tableName, null, cv);
         }
 
@@ -182,8 +183,8 @@ public class CreateFragment extends Fragment{
                 db.saveData(new Diary(content.getText().toString(),
                         dateText.getText().toString(),
                         address.getText().toString(),
-                        weatherInteger,
                         condition,
+                        weatherInteger,
                         ((BitmapDrawable) thumbnail.getDrawable()).getBitmap()));
             }
         });
