@@ -54,16 +54,13 @@ import java.util.ArrayList;
 import static androidx.core.content.ContextCompat.getColor;
 
 public class StatisticFragment extends Fragment {
-    BarChart[] chart2;
-    LineChart chart3;
-
     DatabaseHelper dbHelper;
     SQLiteDatabase database;
 
     class PieChartClass{
         PieChart chart;
 
-        public PieChartClass(View viewById) {
+        PieChartClass(View viewById) {
             this.chart = (PieChart) viewById;
         }
 
@@ -139,6 +136,218 @@ public class StatisticFragment extends Fragment {
         }
     }
 
+    class BarChartClass{
+        BarChart chart;
+
+        BarChartClass(View viewById) {
+            this.chart = (BarChart) viewById;
+        }
+
+        public void setBarChartUi(){
+            chart.setDrawBarShadow(false);
+            chart.setDrawValueAboveBar(false);
+
+            chart.getDescription().setEnabled(false);
+
+            // scaling can now only be done on x- and y-axis separately
+            chart.setPinchZoom(false);
+
+            chart.setDrawGridBackground(false);
+
+            XAxis xAxis = chart.getXAxis();
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+            xAxis.setDrawGridLines(false);
+            xAxis.setGranularity(1f); // only intervals of 1 day
+            xAxis.setLabelCount(7);
+
+            YAxis leftAxis = chart.getAxisLeft();
+            leftAxis.setLabelCount(8, false);
+            leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
+            leftAxis.setSpaceTop(15f);
+            leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+
+            YAxis rightAxis = chart.getAxisRight();
+            rightAxis.setDrawGridLines(false);
+            rightAxis.setLabelCount(8, false);
+            rightAxis.setSpaceTop(15f);
+            rightAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+
+            Legend l = chart.getLegend();
+            l.setEnabled(false);
+
+            setBarChartData();
+        }
+
+        private void setBarChartData(){
+            ArrayList<BarEntry> values = new ArrayList<>();
+
+            values.add(new BarEntry(0, 10.0f, getResources().getDrawable(R.drawable.smile1_24)));
+            values.add(new BarEntry(1, 20.0f, getResources().getDrawable(R.drawable.smile2_24)));
+            values.add(new BarEntry(2, 5.0f, getResources().getDrawable(R.drawable.smile3_24)));
+            values.add(new BarEntry(3, 30.0f, getResources().getDrawable(R.drawable.smile4_24)));
+            values.add(new BarEntry(4, 50.0f, getResources().getDrawable(R.drawable.smile5_24)));
+
+            BarDataSet set1;
+
+            if (chart.getData() != null &&
+                    chart.getData().getDataSetCount() > 0) {
+                set1 = (BarDataSet) chart.getData().getDataSetByIndex(0);
+                set1.setValues(values);
+                chart.getData().notifyDataChanged();
+                chart.notifyDataSetChanged();
+
+            } else {
+                set1 = new BarDataSet(values, "요일별 기분");
+
+                set1.setDrawIcons(true);
+                set1.setIconsOffset(new MPPointF(0, -25));
+                set1.setColors(getColor(getContext(), android.R.color.holo_orange_light),
+                        getColor(getContext(), android.R.color.holo_blue_light),
+                        getColor(getContext(), android.R.color.holo_green_light),
+                        getColor(getContext(), android.R.color.holo_red_light),
+                        getColor(getContext(), android.R.color.holo_purple));
+
+                ArrayList<IBarDataSet> dataSets = new ArrayList<>();
+                dataSets.add(set1);
+
+                BarData data = new BarData(dataSets);
+                data.setValueTextSize(10f);
+                data.setBarWidth(0.9f);
+
+                chart.setData(data);
+            }
+        }
+    }
+
+    class LineChartClass{
+        LineChart chart;
+
+        LineChartClass(View viewById) {
+            this.chart = (LineChart) viewById;
+        }
+
+        public void setLineChartUi(){
+            // background color
+            chart.setBackgroundColor(Color.WHITE);
+
+            // disable description text
+            chart.getDescription().setEnabled(false);
+
+            // enable touch gestures
+            chart.setTouchEnabled(true);
+
+            // set listeners
+            chart.setDrawGridBackground(false);
+
+            // enable scaling and dragging
+            chart.setDragEnabled(true);
+            chart.setScaleEnabled(true);
+            // chart.setScaleXEnabled(true);
+            // chart.setScaleYEnabled(true);
+
+            // force pinch zoom along both axis
+            chart.setPinchZoom(true);
+
+            XAxis xAxis;
+            {   // // X-Axis Style // //
+                xAxis = chart.getXAxis();
+
+                // vertical grid lines
+                xAxis.enableGridDashedLine(10f, 10f, 0f);
+            }
+
+            YAxis yAxis;
+            {   // // Y-Axis Style // //
+                yAxis = chart.getAxisLeft();
+
+                // disable dual axis (only use LEFT axis)
+                chart.getAxisRight().setEnabled(false);
+
+                // horizontal grid lines
+                yAxis.enableGridDashedLine(10f, 10f, 0f);
+
+                // axis range
+                yAxis.setAxisMaximum(100f);
+                yAxis.setAxisMinimum(0f);
+            }
+
+            // get the legend (only possible after setting data)
+            Legend l = chart.getLegend();
+            l.setEnabled(false);
+
+            setLineChartData();
+        }
+
+        private void setLineChartData() {
+            ArrayList<Entry> values = new ArrayList<>();
+
+            values.add(new Entry(0, 20.0f, getResources().getDrawable(R.drawable.smile1_24)));
+            values.add(new Entry(1, 40.0f, getResources().getDrawable(R.drawable.smile2_24)));
+            values.add(new Entry(2, 60.0f, getResources().getDrawable(R.drawable.smile3_24)));
+            values.add(new Entry(3, 10.0f, getResources().getDrawable(R.drawable.smile4_24)));
+            values.add(new Entry(4, 80.0f, getResources().getDrawable(R.drawable.smile5_24)));
+
+            LineDataSet set1;
+
+            if (chart.getData() != null &&
+                    chart.getData().getDataSetCount() > 0) {
+                set1 = (LineDataSet) chart.getData().getDataSetByIndex(0);
+                set1.setValues(values);
+                set1.notifyDataSetChanged();
+                chart.getData().notifyDataChanged();
+                chart.notifyDataSetChanged();
+            } else {
+                // create a dataset and give it a type
+                set1 = new LineDataSet(values, "DataSet 1");
+
+                set1.setDrawIcons(true);
+
+                // draw dashed line
+                set1.enableDashedLine(10f, 5f, 0f);
+
+                // black lines and points
+                set1.setColor(Color.BLACK);
+                set1.setCircleColor(Color.BLACK);
+
+                // line thickness and point size
+                set1.setLineWidth(1f);
+                set1.setCircleRadius(3f);
+
+                // draw points as solid circles
+                set1.setDrawCircleHole(false);
+
+                // customize legend entry
+                set1.setFormLineWidth(1f);
+                set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
+                set1.setFormSize(15.f);
+
+                // text size of values
+                set1.setValueTextSize(9f);
+
+                // draw selection line as dashed
+                set1.enableDashedHighlightLine(10f, 5f, 0f);
+
+                // set the filled area
+                set1.setDrawFilled(true);
+                set1.setFillFormatter(new IFillFormatter() {
+                    @Override
+                    public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
+                        return chart.getAxisLeft().getAxisMinimum();
+                    }
+                });
+
+                ArrayList<ILineDataSet> dataSets = new ArrayList<>();
+                dataSets.add(set1); // add the data sets
+
+                // create a data object with the data sets
+                LineData data = new LineData(dataSets);
+
+                // set data
+                chart.setData(data);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)  {
@@ -149,217 +358,21 @@ public class StatisticFragment extends Fragment {
         PieChartClass chart1 = new PieChartClass(view.findViewById(R.id.chart1));
         chart1.setPieChartUi();
 
+        BarChartClass[] chart2 = new BarChartClass[7];
         Resources res = getResources();
-        chart2 = new BarChart[7];
         for(int i=0; i<7; i++) {
             String idName = "chart2_" + (i+1);
-            chart2[i] = view.findViewById(res.getIdentifier(idName, "id", getActivity().getPackageName()));
-            setBarChartUi(chart2[i]);
+            chart2[i] = new BarChartClass(view.findViewById(res.getIdentifier(idName, "id", getActivity().getPackageName())));
+            chart2[i].setBarChartUi();
         }
 
-        chart3 = view.findViewById(R.id.chart3);
-        setLineChartUi(chart3);
+        LineChartClass chart3 = new LineChartClass(view.findViewById(R.id.chart3));
+        chart3.setLineChartUi();
 
         return view;
     }
 
     private float getPercentage(int divident, int divider){
         return divident / (float)divider * 100.0f;
-    }
-
-    private void setBarChartUi(BarChart chart){
-        chart.setDrawBarShadow(false);
-        chart.setDrawValueAboveBar(false);
-
-        chart.getDescription().setEnabled(false);
-
-        // scaling can now only be done on x- and y-axis separately
-        chart.setPinchZoom(false);
-
-        chart.setDrawGridBackground(false);
-
-        XAxis xAxis = chart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f); // only intervals of 1 day
-        xAxis.setLabelCount(7);
-
-        YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setLabelCount(8, false);
-        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
-        leftAxis.setSpaceTop(15f);
-        leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
-
-        YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setDrawGridLines(false);
-        rightAxis.setLabelCount(8, false);
-        rightAxis.setSpaceTop(15f);
-        rightAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
-
-        Legend l = chart.getLegend();
-        l.setEnabled(false);
-
-        setBarChartData(chart);
-    }
-
-    public void setBarChartData(BarChart chart){
-        ArrayList<BarEntry> values = new ArrayList<>();
-
-        values.add(new BarEntry(0, 10.0f, getResources().getDrawable(R.drawable.smile1_24)));
-        values.add(new BarEntry(1, 20.0f, getResources().getDrawable(R.drawable.smile2_24)));
-        values.add(new BarEntry(2, 5.0f, getResources().getDrawable(R.drawable.smile3_24)));
-        values.add(new BarEntry(3, 30.0f, getResources().getDrawable(R.drawable.smile4_24)));
-        values.add(new BarEntry(4, 50.0f, getResources().getDrawable(R.drawable.smile5_24)));
-
-        BarDataSet set1;
-
-        if (chart.getData() != null &&
-                chart.getData().getDataSetCount() > 0) {
-            set1 = (BarDataSet) chart.getData().getDataSetByIndex(0);
-            set1.setValues(values);
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-
-        } else {
-            set1 = new BarDataSet(values, "요일별 기분");
-
-            set1.setDrawIcons(true);
-            set1.setIconsOffset(new MPPointF(0, -25));
-            set1.setColors(getColor(getContext(), android.R.color.holo_orange_light),
-                    getColor(getContext(), android.R.color.holo_blue_light),
-                    getColor(getContext(), android.R.color.holo_green_light),
-                    getColor(getContext(), android.R.color.holo_red_light),
-                    getColor(getContext(), android.R.color.holo_purple));
-
-            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
-            dataSets.add(set1);
-
-            BarData data = new BarData(dataSets);
-            data.setValueTextSize(10f);
-            data.setBarWidth(0.9f);
-
-            chart.setData(data);
-        }
-    }
-
-    private void setLineChartUi(LineChart chart){
-        // background color
-        chart.setBackgroundColor(Color.WHITE);
-
-        // disable description text
-        chart.getDescription().setEnabled(false);
-
-        // enable touch gestures
-        chart.setTouchEnabled(true);
-
-        // set listeners
-        chart.setDrawGridBackground(false);
-
-        // enable scaling and dragging
-        chart.setDragEnabled(true);
-        chart.setScaleEnabled(true);
-        // chart.setScaleXEnabled(true);
-        // chart.setScaleYEnabled(true);
-
-        // force pinch zoom along both axis
-        chart.setPinchZoom(true);
-
-        XAxis xAxis;
-        {   // // X-Axis Style // //
-            xAxis = chart.getXAxis();
-
-            // vertical grid lines
-            xAxis.enableGridDashedLine(10f, 10f, 0f);
-        }
-
-        YAxis yAxis;
-        {   // // Y-Axis Style // //
-            yAxis = chart.getAxisLeft();
-
-            // disable dual axis (only use LEFT axis)
-            chart.getAxisRight().setEnabled(false);
-
-            // horizontal grid lines
-            yAxis.enableGridDashedLine(10f, 10f, 0f);
-
-            // axis range
-            yAxis.setAxisMaximum(100f);
-            yAxis.setAxisMinimum(0f);
-        }
-
-        // get the legend (only possible after setting data)
-        Legend l = chart.getLegend();
-        l.setEnabled(false);
-
-        setLineChartData(chart);
-    }
-
-    private void setLineChartData(final LineChart chart) {
-        ArrayList<Entry> values = new ArrayList<>();
-
-        values.add(new Entry(0, 20.0f, getResources().getDrawable(R.drawable.smile1_24)));
-        values.add(new Entry(1, 40.0f, getResources().getDrawable(R.drawable.smile2_24)));
-        values.add(new Entry(2, 60.0f, getResources().getDrawable(R.drawable.smile3_24)));
-        values.add(new Entry(3, 10.0f, getResources().getDrawable(R.drawable.smile4_24)));
-        values.add(new Entry(4, 80.0f, getResources().getDrawable(R.drawable.smile5_24)));
-
-        LineDataSet set1;
-
-        if (chart.getData() != null &&
-                chart.getData().getDataSetCount() > 0) {
-            set1 = (LineDataSet) chart.getData().getDataSetByIndex(0);
-            set1.setValues(values);
-            set1.notifyDataSetChanged();
-            chart.getData().notifyDataChanged();
-            chart.notifyDataSetChanged();
-        } else {
-            // create a dataset and give it a type
-            set1 = new LineDataSet(values, "DataSet 1");
-
-            set1.setDrawIcons(true);
-
-            // draw dashed line
-            set1.enableDashedLine(10f, 5f, 0f);
-
-            // black lines and points
-            set1.setColor(Color.BLACK);
-            set1.setCircleColor(Color.BLACK);
-
-            // line thickness and point size
-            set1.setLineWidth(1f);
-            set1.setCircleRadius(3f);
-
-            // draw points as solid circles
-            set1.setDrawCircleHole(false);
-
-            // customize legend entry
-            set1.setFormLineWidth(1f);
-            set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
-            set1.setFormSize(15.f);
-
-            // text size of values
-            set1.setValueTextSize(9f);
-
-            // draw selection line as dashed
-            set1.enableDashedHighlightLine(10f, 5f, 0f);
-
-            // set the filled area
-            set1.setDrawFilled(true);
-            set1.setFillFormatter(new IFillFormatter() {
-                @Override
-                public float getFillLinePosition(ILineDataSet dataSet, LineDataProvider dataProvider) {
-                    return chart.getAxisLeft().getAxisMinimum();
-                }
-            });
-
-            ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-            dataSets.add(set1); // add the data sets
-
-            // create a data object with the data sets
-            LineData data = new LineData(dataSets);
-
-            // set data
-            chart.setData(data);
-        }
     }
 }
