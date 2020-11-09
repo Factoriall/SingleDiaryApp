@@ -75,15 +75,6 @@ public class ContentFragment extends Fragment {
     }
 
     private void setItemsInAdapter(DiaryAdapter adapter){
-        /*Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.picture1);
-        adapter.addItem(new Diary("좋아요", "2012-03-03", "서울", 1 , 2, bitmap));
-        adapter.addItem(new Diary("안 좋아요", "2012-03-03", "서울", 2 , 1, bitmap));
-        adapter.addItem(new Diary("싫어요", "2012-03-03", "서울", 3 , 3, bitmap));
-        adapter.addItem(new Diary("good", "2012-03-03", "서울", 4 , 4, bitmap));
-        adapter.addItem(new Diary("bad", "2012-03-03", "서울", 5 , 7, bitmap));
-        adapter.addItem(new Diary("fantastic", "2012-03-03", "서울", 1 , 6, bitmap));
-        adapter.addItem(new Diary("happy", "2012-03-03", "서울", 3 , 5, bitmap));
-        */
         dbHelper = new DatabaseHelper(getContext());
         database = dbHelper.getWritableDatabase();
 

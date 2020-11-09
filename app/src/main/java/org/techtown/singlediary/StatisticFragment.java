@@ -12,6 +12,7 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.XAxis;
@@ -40,7 +42,9 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IFillFormatter;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
@@ -48,8 +52,10 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.Utils;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static androidx.core.content.ContextCompat.getColor;
 
@@ -103,17 +109,15 @@ public class StatisticFragment extends Fragment {
             }
 
             if(recordCount != 0) {
-                if(smile[0] != 0)
-                    entries.add(new PieEntry(getPercentage(smile[0], recordCount), "", getResources().getDrawable(R.drawable.smile1_24)));
-                if(smile[1] != 0)
-                    entries.add(new PieEntry(getPercentage(smile[1], recordCount), "", getResources().getDrawable(R.drawable.smile2_24)));
-                if(smile[2] != 0)
-                    entries.add(new PieEntry(getPercentage(smile[2], recordCount), "", getResources().getDrawable(R.drawable.smile3_24)));
-                if(smile[3] != 0)
-                    entries.add(new PieEntry(getPercentage(smile[3], recordCount), "", getResources().getDrawable(R.drawable.smile4_24)));
-                if(smile[4] != 0)
-                    entries.add(new PieEntry(getPercentage(smile[4], recordCount), "", getResources().getDrawable(R.drawable.smile5_24)));
+                for(int i=0; i<5; i++){
+                    if(smile[i] != 0){
+                        String idName = "smile" + (i+1) + "_24";
+                        final int resourceId = getResources().getIdentifier(idName, "drawable", getActivity().getPackageName());
+                        entries.add(new PieEntry(getPercentage(smile[i], recordCount), "", getResources().getDrawable(resourceId)));
+                    }
+                }
             }
+
             PieDataSet dataSet = new PieDataSet(entries, "기분별 비율");
 
             dataSet.setDrawIcons(true);
@@ -138,9 +142,11 @@ public class StatisticFragment extends Fragment {
 
     class BarChartClass{
         BarChart chart;
+        int dayOfTheWeek;
 
-        BarChartClass(View viewById) {
+        BarChartClass(View viewById, int dayOfTheWeek) {
             this.chart = (BarChart) viewById;
+            this.dayOfTheWeek = dayOfTheWeek;
         }
 
         public void setBarChartUi(){
@@ -159,18 +165,16 @@ public class StatisticFragment extends Fragment {
             xAxis.setDrawGridLines(false);
             xAxis.setGranularity(1f); // only intervals of 1 day
             xAxis.setLabelCount(7);
+            xAxis.setDrawLabels(false);
 
             YAxis leftAxis = chart.getAxisLeft();
-            leftAxis.setLabelCount(8, false);
             leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
-            leftAxis.setSpaceTop(15f);
+            leftAxis.setSpaceTop(30f);
             leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+            leftAxis.setAxisMaximum(110f);
 
             YAxis rightAxis = chart.getAxisRight();
-            rightAxis.setDrawGridLines(false);
-            rightAxis.setLabelCount(8, false);
-            rightAxis.setSpaceTop(15f);
-            rightAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+            rightAxis.setEnabled(false);
 
             Legend l = chart.getLegend();
             l.setEnabled(false);
@@ -181,11 +185,21 @@ public class StatisticFragment extends Fragment {
         private void setBarChartData(){
             ArrayList<BarEntry> values = new ArrayList<>();
 
-            values.add(new BarEntry(0, 10.0f, getResources().getDrawable(R.drawable.smile1_24)));
-            values.add(new BarEntry(1, 20.0f, getResources().getDrawable(R.drawable.smile2_24)));
-            values.add(new BarEntry(2, 5.0f, getResources().getDrawable(R.drawable.smile3_24)));
-            values.add(new BarEntry(3, 30.0f, getResources().getDrawable(R.drawable.smile4_24)));
-            values.add(new BarEntry(4, 50.0f, getResources().getDrawable(R.drawable.smile5_24)));
+            Cursor cursor = database.rawQuery("SELECT condition FROM diary WHERE strftime('%w', date) IN ('" + dayOfTheWeek + "')", null);
+
+            int[] smile = new int[5];
+            int recordCount = cursor.getCount();
+            for(int i=0; i<recordCount; i++) {
+                cursor.moveToNext();
+                int condition = cursor.getInt(0);
+                smile[condition]++;
+            }
+
+            for(int i=0; i<5; i++){
+                String idName = "smile" + (i+1) + "_24";
+                final int resourceId = getResources().getIdentifier(idName, "drawable", getActivity().getPackageName());
+                values.add(new BarEntry(i, getPercentage(smile[i], recordCount), getResources().getDrawable(resourceId)));
+            }
 
             BarDataSet set1;
 
@@ -219,14 +233,14 @@ public class StatisticFragment extends Fragment {
         }
     }
 
-    class LineChartClass{
+    class LineChartClass {
         LineChart chart;
 
         LineChartClass(View viewById) {
             this.chart = (LineChart) viewById;
         }
 
-        public void setLineChartUi(){
+        public void setLineChartUi() {
             // background color
             chart.setBackgroundColor(Color.WHITE);
 
@@ -252,8 +266,13 @@ public class StatisticFragment extends Fragment {
             {   // // X-Axis Style // //
                 xAxis = chart.getXAxis();
 
-                // vertical grid lines
-                xAxis.enableGridDashedLine(10f, 10f, 0f);
+                xAxis.setLabelCount(5, /*force: */true);
+                xAxis.setAxisMaximum(4);
+                xAxis.setAxisMinimum(0);
+
+                xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+                xAxis.setDrawGridLines(false);
             }
 
             YAxis yAxis;
@@ -263,11 +282,9 @@ public class StatisticFragment extends Fragment {
                 // disable dual axis (only use LEFT axis)
                 chart.getAxisRight().setEnabled(false);
 
-                // horizontal grid lines
-                yAxis.enableGridDashedLine(10f, 10f, 0f);
 
                 // axis range
-                yAxis.setAxisMaximum(100f);
+                yAxis.setAxisMaximum(110f);
                 yAxis.setAxisMinimum(0f);
             }
 
@@ -281,11 +298,49 @@ public class StatisticFragment extends Fragment {
         private void setLineChartData() {
             ArrayList<Entry> values = new ArrayList<>();
 
-            values.add(new Entry(0, 20.0f, getResources().getDrawable(R.drawable.smile1_24)));
-            values.add(new Entry(1, 40.0f, getResources().getDrawable(R.drawable.smile2_24)));
-            values.add(new Entry(2, 60.0f, getResources().getDrawable(R.drawable.smile3_24)));
-            values.add(new Entry(3, 10.0f, getResources().getDrawable(R.drawable.smile4_24)));
-            values.add(new Entry(4, 80.0f, getResources().getDrawable(R.drawable.smile5_24)));
+            Cursor cursor = database.rawQuery("SELECT condition, date FROM diary ORDER BY date(date) DESC LIMIT 5", null);
+            int recordCount = cursor.getCount();
+
+            int[] dateCondition = new int[5];
+            final String[] dateString = new String[]{"","","","",""};
+
+            for(int i=4; i>=5-recordCount; i--) {
+
+                cursor.moveToNext();
+                switch(cursor.getInt(0)){
+                    case 0:
+                        dateCondition[i] = 20;
+                        break;
+                    case 1:
+                        dateCondition[i] = 40;
+                        break;
+                    case 2:
+                        dateCondition[i] = 60;
+                        break;
+                    case 3:
+                        dateCondition[i] = 80;
+                        break;
+                    case 4:
+                        dateCondition[i] = 100;
+                        break;
+                }
+                String[] dateInfo = cursor.getString(1).split("-");
+                dateString[i] = dateInfo[1] + "/" + dateInfo[2];
+            }
+
+            for(int i=0; i<5; i++){
+                values.add(new Entry(i, dateCondition[i]));
+            }
+
+            XAxis xAxis = chart.getXAxis();
+            xAxis.setDrawLabels(true);
+            xAxis.setValueFormatter(new ValueFormatter(){
+                @Override
+                public String getFormattedValue(float value) {
+                    Log.d("formattedValue", Float.toString(value));
+                    return dateString[(int)value];
+                }
+            });
 
             LineDataSet set1;
 
@@ -300,10 +355,7 @@ public class StatisticFragment extends Fragment {
                 // create a dataset and give it a type
                 set1 = new LineDataSet(values, "DataSet 1");
 
-                set1.setDrawIcons(true);
-
-                // draw dashed line
-                set1.enableDashedLine(10f, 5f, 0f);
+                set1.setDrawIcons(false);
 
                 // black lines and points
                 set1.setColor(Color.BLACK);
@@ -318,15 +370,12 @@ public class StatisticFragment extends Fragment {
 
                 // customize legend entry
                 set1.setFormLineWidth(1f);
-                set1.setFormLineDashEffect(new DashPathEffect(new float[]{10f, 5f}, 0f));
                 set1.setFormSize(15.f);
 
                 // text size of values
                 set1.setValueTextSize(9f);
 
-                // draw selection line as dashed
-                set1.enableDashedHighlightLine(10f, 5f, 0f);
-
+                set1.setDrawValues(false);
                 // set the filled area
                 set1.setDrawFilled(true);
                 set1.setFillFormatter(new IFillFormatter() {
@@ -346,6 +395,7 @@ public class StatisticFragment extends Fragment {
                 chart.setData(data);
             }
         }
+
     }
 
     @Nullable
@@ -362,7 +412,7 @@ public class StatisticFragment extends Fragment {
         Resources res = getResources();
         for(int i=0; i<7; i++) {
             String idName = "chart2_" + (i+1);
-            chart2[i] = new BarChartClass(view.findViewById(res.getIdentifier(idName, "id", getActivity().getPackageName())));
+            chart2[i] = new BarChartClass(view.findViewById(res.getIdentifier(idName, "id", getActivity().getPackageName())), i);
             chart2[i].setBarChartUi();
         }
 
@@ -373,6 +423,8 @@ public class StatisticFragment extends Fragment {
     }
 
     private float getPercentage(int divident, int divider){
+        if(divider == 0)
+            return 0.0f;
         return divident / (float)divider * 100.0f;
     }
 }

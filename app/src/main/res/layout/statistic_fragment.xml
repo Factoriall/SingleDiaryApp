@@ -44,7 +44,7 @@
 
         <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -64,22 +64,22 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="월요일" />
+                        android:text="일요일" />
 
                     <com.github.mikephil.charting.charts.BarChart
                         android:id="@+id/chart2_1"
                         android:layout_width="250dp"
                         android:layout_height="250dp"
-                        android:layout_gravity="center_horizontal"
+                        android:layout_gravity="center"
                         android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp" >
+                        android:layout_marginBottom="10dp">
 
                     </com.github.mikephil.charting.charts.BarChart>
                 </androidx.cardview.widget.CardView>
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="400dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     app:cardBackgroundColor="#FFFFFFFF"
                     app:cardCornerRadius="10dp"
                     app:cardElevation="5dp"
@@ -90,7 +90,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="화요일"
+                        android:text="월요일"
                         android:textSize="16sp" />
 
                     <com.github.mikephil.charting.charts.BarChart
@@ -115,7 +115,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="수요일"
+                        android:text="화요일"
                         android:textSize="16sp" />
 
                     <com.github.mikephil.charting.charts.BarChart
@@ -140,7 +140,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="목요일"
+                        android:text="수요일"
                         android:textSize="16sp" />
 
                     <com.github.mikephil.charting.charts.BarChart
@@ -154,7 +154,7 @@
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="400dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     app:cardBackgroundColor="#FFFFFFFF"
                     app:cardCornerRadius="10dp"
                     app:cardElevation="5dp"
@@ -165,7 +165,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="금요일"
+                        android:text="목요일"
                         android:textSize="16sp" />
 
                     <com.github.mikephil.charting.charts.BarChart
@@ -179,7 +179,7 @@
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="400dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     app:cardBackgroundColor="#FFFFFFFF"
                     app:cardCornerRadius="10dp"
                     app:cardElevation="5dp"
@@ -190,7 +190,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="토요일"
+                        android:text="금요일"
                         android:textSize="16sp" />
 
                     <com.github.mikephil.charting.charts.BarChart
@@ -215,7 +215,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="5dp"
-                        android:text="일요일"
+                        android:text="토요일"
                         android:textSize="16sp" />
 
                     <com.github.mikephil.charting.charts.BarChart
