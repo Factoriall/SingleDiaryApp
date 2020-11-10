@@ -26,6 +26,6 @@
   - 요일별 기분: 월요일부터 일요일까지 나눠서 기분별 비율이 어떻게 되는지 Bar Chart를 통해 보여줌
   - 기분 변화: 최근 5개의 데이터로부터 기분이 어떻게 변화해갔는지 Line Chart를 통해 보여줌
   
-  ## 사용한 오픈소스
-  - 안드로이드 차트: https://github.com/PhilJay/MPAndroidChart
-  - 권한 물어보기: https://github.com/pedroSG94/AutoPermissions
+## 사용한 오픈소스
+- 안드로이드 차트: https://github.com/PhilJay/MPAndroidChart
+- 권한 물어보기: https://github.com/pedroSG94/AutoPermissions
